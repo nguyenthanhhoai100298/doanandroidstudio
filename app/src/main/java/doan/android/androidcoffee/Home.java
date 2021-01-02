@@ -1,6 +1,7 @@
 package doan.android.androidcoffee;
 
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Menu;
 import android.view.ViewGroup;
@@ -58,7 +59,7 @@ public class Home extends AppCompatActivity {
 
         // Init firebase
         database = FirebaseDatabase.getInstance();
-        category = database.getReference("Category");
+        category = database.getInstance().getReference().child("Category");
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -101,7 +102,12 @@ public class Home extends AppCompatActivity {
                         .build();
 
         FirebaseRecyclerAdapter<Category, MenuViewHolder> adapter = new FirebaseRecyclerAdapter<Category, MenuViewHolder>(options) {
-            @Override
+            public MenuViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                View view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.menu_item, parent, false);
+
+                return new MenuViewHolder(view);
+            }
             protected void onBindViewHolder(@NonNull MenuViewHolder holder, int position, @NonNull Category model) {
                 holder.txtMenuName.setText(model.getName());
                 Picasso.with(getBaseContext()).load(model.getImage())
@@ -115,13 +121,9 @@ public class Home extends AppCompatActivity {
                 });
             }
 
-            @NonNull
-            @Override
-            public MenuViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                return null;
-            }
         };
         recycler_menu.setAdapter(adapter);
+        adapter.startListening();
     }
 
 
@@ -138,4 +140,5 @@ public class Home extends AppCompatActivity {
         return NavigationUI.navigateUp(navController, mAppBarConfiguration)
                 || super.onSupportNavigateUp();
     }
+
 }
